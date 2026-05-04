@@ -1,12 +1,12 @@
 import { IAuthProvider } from './IAuthProvider';
+import { IUserRepository } from './IUserRepository';
 
 // A concrete implementation of the IAuthProvider for customers
 export class CustomerAuthProvider implements IAuthProvider {
-    private customers = [{ id: 1, email: 'customer@example.com', password: '456', role: 'customer' }];
+    constructor(private repository: IUserRepository) {}
 
     async verify(identity: string, secret: string): Promise<boolean> {
-        const customer = this.customers.find(c => c.email === identity && c.password === secret);
-        return customer !== undefined;
+        return this.repository.findByCredentials(identity, secret);
     }
 
     getType(): string {
