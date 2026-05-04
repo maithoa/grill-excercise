@@ -1,10 +1,13 @@
 import { CustomerAuthProvider } from '../src/improve/CustomerAuthProvider';
+import { InMemoryCustomerRepository } from '../src/improve/InMemoryCustomerRepository';
+import { IUserRepository } from '../src/improve/IUserRepository';
 
 describe('CustomerAuthProvider', () => {
     let provider: CustomerAuthProvider;
 
     beforeEach(() => {
-        provider = new CustomerAuthProvider();
+        const repository = new InMemoryCustomerRepository();
+        provider = new CustomerAuthProvider(repository);
     });
 
     it('should return correct provider type', () => {
@@ -25,6 +28,16 @@ describe('CustomerAuthProvider', () => {
         it('should return false for invalid customer password', async () => {
             const result = await provider.verify('customer@example.com', 'wrongpassword');
             expect(result).toBe(false);
+        });
+
+        it('should delegate credential verification to the injected repository', async () => {
+            const mockRepository: IUserRepository = {
+                findByCredentials: jest.fn().mockResolvedValue(true)
+            };
+            const providerWithMock = new CustomerAuthProvider(mockRepository);
+            const result = await providerWithMock.verify('any@example.com', 'anypassword');
+            expect(mockRepository.findByCredentials).toHaveBeenCalledWith('any@example.com', 'anypassword');
+            expect(result).toBe(true);
         });
     });
 });
