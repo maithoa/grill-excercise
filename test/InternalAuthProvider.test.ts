@@ -1,10 +1,13 @@
 import { InternalAuthProvider } from '../src/improve/InternalAuthProvider';
+import { InMemoryInternalUserRepository } from '../src/improve/InMemoryInternalUserRepository';
+import { IUserRepository } from '../src/improve/IUserRepository';
 
 describe('InternalAuthProvider', () => {
     let provider: InternalAuthProvider;
 
     beforeEach(() => {
-        provider = new InternalAuthProvider();
+        const repository = new InMemoryInternalUserRepository();
+        provider = new InternalAuthProvider(repository);
     });
 
     it('should return correct provider type', () => {
@@ -25,6 +28,16 @@ describe('InternalAuthProvider', () => {
         it('should return false for invalid internal password', async () => {
             const result = await provider.verify('admin', 'wrongpassword');
             expect(result).toBe(false);
+        });
+
+        it('should delegate credential verification to the injected repository', async () => {
+            const mockRepository: IUserRepository = {
+                findByCredentials: jest.fn().mockResolvedValue(true)
+            };
+            const providerWithMock = new InternalAuthProvider(mockRepository);
+            const result = await providerWithMock.verify('anyuser', 'anypassword');
+            expect(mockRepository.findByCredentials).toHaveBeenCalledWith('anyuser', 'anypassword');
+            expect(result).toBe(true);
         });
     });
 });

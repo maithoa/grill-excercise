@@ -3,6 +3,8 @@ import rateLimit from 'express-rate-limit';
 import { AuthService } from './improve/AuthService';
 import { CustomerAuthProvider } from './improve/CustomerAuthProvider';
 import { InternalAuthProvider } from './improve/InternalAuthProvider';
+import { InMemoryCustomerRepository } from './improve/InMemoryCustomerRepository';
+import { InMemoryInternalUserRepository } from './improve/InMemoryInternalUserRepository';
 import { IAuthProvider } from './improve/IAuthProvider';
 
 // Rate limiter: max 10 login attempts per IP per 15 minutes
@@ -20,10 +22,14 @@ export function createApp(rateLimiter: RequestHandler = loginRateLimiter) {
 
     // Middleware to parse JSON request bodies
     app.use(express.json());
+    // Initialize Repositories
+    const customerRepository = new InMemoryCustomerRepository();
+    const internalUserRepository = new InMemoryInternalUserRepository();
 
     // Initialize Providers
-    const customerProvider = new CustomerAuthProvider();
-    const internalProvider = new InternalAuthProvider();
+    const customerProvider = new CustomerAuthProvider(customerRepository);
+    const internalProvider = new InternalAuthProvider(internalUserRepository);
+
 
     // Map providers to their types
     const providers = new Map<string, IAuthProvider>();
