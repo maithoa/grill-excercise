@@ -23,7 +23,7 @@ describe('AuthService', () => {
     });
 
     it('should return invalid credentials when verify fails', async () => {
-        (mockProvider.verify as jest.Mock).mockResolvedValue(false);
+        (mockProvider.verify as jest.Mock).mockResolvedValue(null);
 
         const result = await authService.login('user1', 'wrong-secret', 'test-type');
         
@@ -31,12 +31,13 @@ describe('AuthService', () => {
         expect(result).toEqual({ success: false, message: 'Invalid credentials' });
     });
 
-    it('should return login successful when verify succeeds', async () => {
-        (mockProvider.verify as jest.Mock).mockResolvedValue(true);
+    it('should return login successful with user identity when verify succeeds', async () => {
+        const mockUser = { id: 1, identity: 'user2', role: 'customer' };
+        (mockProvider.verify as jest.Mock).mockResolvedValue(mockUser);
 
         const result = await authService.login('user2', 'correct-secret', 'test-type');
         
         expect(mockProvider.verify).toHaveBeenCalledWith('user2', 'correct-secret');
-        expect(result).toEqual({ success: true, message: 'Login successful' });
+        expect(result).toEqual({ success: true, message: 'Login successful', id: 1, identity: 'user2', role: 'customer' });
     });
 });
