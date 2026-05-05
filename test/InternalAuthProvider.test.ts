@@ -15,29 +15,30 @@ describe('InternalAuthProvider', () => {
     });
 
     describe('verify', () => {
-        it('should return true for valid internal user credentials', async () => {
+        it('should return AuthUser for valid internal user credentials', async () => {
             const result = await provider.verify('admin', '123');
-            expect(result).toBe(true);
+            expect(result).toMatchObject({ id: 1, identity: 'admin', role: 'internal' });
         });
 
-        it('should return false for invalid internal username', async () => {
+        it('should return null for invalid internal username', async () => {
             const result = await provider.verify('wrongadmin', '123');
-            expect(result).toBe(false);
+            expect(result).toBeNull();
         });
 
-        it('should return false for invalid internal password', async () => {
+        it('should return null for invalid internal password', async () => {
             const result = await provider.verify('admin', 'wrongpassword');
-            expect(result).toBe(false);
+            expect(result).toBeNull();
         });
 
         it('should delegate credential verification to the injected repository', async () => {
+            const mockUser = { id: 1, identity: 'anyuser', role: 'internal' };
             const mockRepository: IUserRepository = {
-                findByCredentials: jest.fn().mockResolvedValue(true)
+                findByCredentials: jest.fn().mockResolvedValue(mockUser)
             };
             const providerWithMock = new InternalAuthProvider(mockRepository);
             const result = await providerWithMock.verify('anyuser', 'anypassword');
             expect(mockRepository.findByCredentials).toHaveBeenCalledWith('anyuser', 'anypassword');
-            expect(result).toBe(true);
+            expect(result).toEqual(mockUser);
         });
     });
 });

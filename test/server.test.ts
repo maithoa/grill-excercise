@@ -11,7 +11,7 @@ describe('Authentication API Endpoints', () => {
                 .send({ email: 'customer@example.com', pin: '456' });
             
             expect(response.status).toBe(200);
-            expect(response.body).toEqual({ success: true, message: 'Login successful' });
+            expect(response.body).toMatchObject({ success: true, message: 'Login successful', id: 1, identity: 'customer@example.com', role: 'customer' });
         });
 
         it('should return 401 for invalid customer credentials', async () => {
@@ -41,7 +41,7 @@ describe('Authentication API Endpoints', () => {
                 .send({ username: 'admin', password: '123' });
             
             expect(response.status).toBe(200);
-            expect(response.body).toEqual({ success: true, message: 'Login successful' });
+            expect(response.body).toMatchObject({ success: true, message: 'Login successful', id: 1, identity: 'admin', role: 'internal' });
         });
 
         it('should return 401 for invalid internal user credentials', async () => {

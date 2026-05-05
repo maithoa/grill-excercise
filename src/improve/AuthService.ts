@@ -10,12 +10,12 @@ export class AuthService {
             return {success: false, message: 'Invalid provider type'}
         }
 
-        const isValid = await provider.verify(identity, secret);
-        if (!isValid) {
+        const user = await provider.verify(identity, secret);
+        if (!user) {
             return {success: false, message: 'Invalid credentials'};
         }
 
-        return {success: true, message: 'Login successful'};
+        return {success: true, message: 'Login successful', id: user.id, identity: user.identity, role: user.role};
     }
 
 }
